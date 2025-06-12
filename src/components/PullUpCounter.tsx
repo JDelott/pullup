@@ -25,7 +25,7 @@ const PullUpCounter: React.FC = () => {
   const [repCountdown, setRepCountdown] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Timer logic for rest periods and rep countdown
+  // Modify the useEffect timer logic to automatically count reps
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -41,13 +41,16 @@ const PullUpCounter: React.FC = () => {
           setRepCountdown((prev) => prev - 1);
         }, 1000);
       } else if (repCountdown === 0 && !isResting) {
-        // Reset rep countdown
+        // When countdown reaches 0, automatically count a rep
+        if (currentReps < settings.targetReps) {
+          incrementReps();
+        }
         setRepCountdown(settings.repPace);
       }
     }
 
     return () => clearInterval(interval);
-  }, [isResting, timer, isWorkoutActive, isPaused, repCountdown, settings.repPace]);
+  }, [isResting, timer, isWorkoutActive, isPaused, repCountdown, settings.repPace, currentReps]);
 
   const startWorkout = () => {
     setIsWorkoutActive(true);
@@ -180,14 +183,6 @@ const PullUpCounter: React.FC = () => {
           ) : (
             <>
               <button
-                onClick={incrementReps}
-                disabled={isResting}
-                className={`px-8 py-4 bg-red-500 text-white font-bold rounded-lg 
-                  ${isResting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'} transition-colors`}
-              >
-                Count Rep
-              </button>
-              <button
                 onClick={togglePause}
                 className="px-8 py-4 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 transition-colors"
               >
@@ -196,7 +191,7 @@ const PullUpCounter: React.FC = () => {
               <button
                 onClick={() => setIsWorkoutActive(false)}
                 className="px-8 py-4 border-2 border-white text-white font-bold rounded-lg 
-                  hover:bg-white hover:text-black transition-all"
+          hover:bg-white hover:text-black transition-all"
               >
                 End Workout
               </button>
