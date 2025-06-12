@@ -6,6 +6,7 @@ interface WorkoutSettings {
   targetReps: number;
   sets: number;
   restTime: number; // in seconds
+  repPace: number; // in seconds
 }
 
 const PullUpCounter: React.FC = () => {
@@ -13,6 +14,7 @@ const PullUpCounter: React.FC = () => {
     targetReps: 10,
     sets: 3,
     restTime: 60,
+    repPace: 3, // 3 seconds per rep pace
   });
 
   const [currentSet, setCurrentSet] = useState(1);
@@ -20,31 +22,45 @@ const PullUpCounter: React.FC = () => {
   const [isResting, setIsResting] = useState(false);
   const [timer, setTimer] = useState(0);
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
+  const [repCountdown, setRepCountdown] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Timer logic for rest periods
+  // Timer logic for rest periods and rep countdown
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (isResting && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-    } else if (timer === 0 && isResting) {
-      setIsResting(false);
+    if (isWorkoutActive && !isPaused) {
+      if (isResting && timer > 0) {
+        // Rest period countdown
+        interval = setInterval(() => {
+          setTimer((prev) => prev - 1);
+        }, 1000);
+      } else if (!isResting && repCountdown > 0) {
+        // Rep pace countdown
+        interval = setInterval(() => {
+          setRepCountdown((prev) => prev - 1);
+        }, 1000);
+      } else if (repCountdown === 0 && !isResting) {
+        // Reset rep countdown
+        setRepCountdown(settings.repPace);
+      }
     }
 
     return () => clearInterval(interval);
-  }, [isResting, timer]);
+  }, [isResting, timer, isWorkoutActive, isPaused, repCountdown, settings.repPace]);
 
   const startWorkout = () => {
     setIsWorkoutActive(true);
     setCurrentSet(1);
     setCurrentReps(0);
+    setRepCountdown(settings.repPace);
+    setIsPaused(false);
   };
 
   const incrementReps = () => {
-    if (currentReps < settings.targetReps) {
+    if (currentReps < settings.targetReps && !isResting) {
       setCurrentReps(prev => prev + 1);
+      setRepCountdown(settings.repPace);
 
       // If set is complete
       if (currentReps + 1 === settings.targetReps) {
@@ -59,6 +75,10 @@ const PullUpCounter: React.FC = () => {
         }
       }
     }
+  };
+
+  const togglePause = () => {
+    setIsPaused(!isPaused);
   };
 
   return (
@@ -78,7 +98,7 @@ const PullUpCounter: React.FC = () => {
         {/* Settings Panel */}
         <div className="mb-12 p-6 rounded-lg bg-neutral-800 border border-neutral-700">
           <h3 className="text-xl font-bold text-white mb-4">Workout Settings</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <label className="block text-gray-400 mb-2">Target Reps</label>
               <input
@@ -109,6 +129,16 @@ const PullUpCounter: React.FC = () => {
                 min="0"
               />
             </div>
+            <div>
+              <label className="block text-gray-400 mb-2">Rep Pace (seconds)</label>
+              <input
+                type="number"
+                value={settings.repPace}
+                onChange={(e) => setSettings({ ...settings, repPace: parseInt(e.target.value) })}
+                className="w-full bg-neutral-900 text-white rounded-lg px-4 py-2 border border-neutral-700"
+                min="1"
+              />
+            </div>
           </div>
         </div>
 
@@ -121,6 +151,11 @@ const PullUpCounter: React.FC = () => {
             <div className="text-gray-400">
               Set {currentSet} of {settings.sets}
             </div>
+            {isWorkoutActive && !isResting && (
+              <div className="text-2xl text-red-500 mt-2">
+                Next Rep: {repCountdown}s
+              </div>
+            )}
           </div>
         </div>
 
@@ -151,6 +186,12 @@ const PullUpCounter: React.FC = () => {
                   ${isResting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'} transition-colors`}
               >
                 Count Rep
+              </button>
+              <button
+                onClick={togglePause}
+                className="px-8 py-4 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 transition-colors"
+              >
+                {isPaused ? 'Resume' : 'Pause'}
               </button>
               <button
                 onClick={() => setIsWorkoutActive(false)}
