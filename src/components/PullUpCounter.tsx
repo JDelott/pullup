@@ -59,7 +59,7 @@ const formTips = [
 
 const PullUpCounter: React.FC = () => {
   // Core workout settings
-  const [settings, setSettings] = useState < WorkoutSettings > ({
+  const [settings, setSettings] = useState<WorkoutSettings>({
     targetReps: 10,
     sets: 3,
     restTime: 60,
@@ -74,7 +74,7 @@ const PullUpCounter: React.FC = () => {
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [repCountdown, setRepCountdown] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [workoutStartTime, setWorkoutStartTime] = useState < Date | null > (null);
+  const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
   const [totalWorkoutTime, setTotalWorkoutTime] = useState(0);
 
   // Progress tracking
@@ -86,7 +86,7 @@ const PullUpCounter: React.FC = () => {
   });
 
   // UI state
-  const [selectedPreset, setSelectedPreset] = useState < string > ('');
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
   const [showStats, setShowStats] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
@@ -192,14 +192,11 @@ const PullUpCounter: React.FC = () => {
     })));
   };
 
-  // Update the button and border colors from blue to red
-  // And add some geometric design elements
-
   return (
     <section className="relative py-24 bg-neutral-900 min-h-screen text-white">
       {/* Abstract geometric shapes */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 right-20 w-40 h-40 bg-red-500 rounded-full opacity-10"></div>
+        <div className="absolute top-20 right-20 w-40 h-40 bg-[#00FFD1] rounded-full opacity-10"></div>
         <div className="absolute bottom-40 left-20 w-60 h-60 bg-white rounded-lg rotate-45 opacity-5"></div>
       </div>
 
@@ -208,7 +205,7 @@ const PullUpCounter: React.FC = () => {
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4">
             TRACK YOUR
-            <span className="block text-red-500">PROGRESS</span>
+            <span className="block text-[#00FFD1]">PROGRESS</span>
           </h1>
           <p className="text-xl text-gray-400">{formTips[currentTipIndex]}</p>
         </div>
@@ -226,8 +223,8 @@ const PullUpCounter: React.FC = () => {
                     setSelectedPreset(preset.name);
                   }}
                   className={`p-4 rounded-lg border ${selectedPreset === preset.name
-                      ? 'border-red-500 bg-red-500/10'
-                      : 'border-gray-700 hover:border-red-500'
+                    ? 'border-[#00FFD1] bg-[#00FFD1]/10'
+                    : 'border-gray-700 hover:border-[#00FFD1]'
                     }`}
                 >
                   <h3 className="font-bold mb-2">{preset.name}</h3>
@@ -239,7 +236,7 @@ const PullUpCounter: React.FC = () => {
             {/* Start Button */}
             <button
               onClick={startWorkout}
-              className="w-full py-4 bg-red-500 hover:bg-red-600 rounded-lg font-bold text-xl transition"
+              className="w-full py-4 bg-[#00FFD1] hover:bg-[#00FFD1]/80 text-black rounded-lg font-bold text-xl transition"
             >
               Start Training
             </button>
@@ -277,7 +274,7 @@ const PullUpCounter: React.FC = () => {
               </button>
               <button
                 onClick={completeWorkout}
-                className="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-lg font-bold transition-colors"
+                className="flex-1 py-3 bg-[#00FFD1] hover:bg-[#00FFD1]/80 text-black rounded-lg font-bold transition-colors"
               >
                 End Workout
               </button>
@@ -312,13 +309,13 @@ const PullUpCounter: React.FC = () => {
               {achievements.map((achievement) => (
                 <div
                   key={achievement.id}
-                  className={`p-3 rounded-lg ${achievement.achieved ? 'bg-red-500/20' : 'bg-neutral-700/50'
+                  className={`p-3 rounded-lg ${achievement.achieved ? 'bg-[#00FFD1]/20' : 'bg-neutral-700/50'
                     }`}
                 >
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold">{achievement.name}</h3>
                     {achievement.achieved && (
-                      <span className="text-red-500">✓</span>
+                      <span className="text-[#00FFD1]">✓</span>
                     )}
                   </div>
                   <p className="text-sm text-gray-400">{achievement.description}</p>
