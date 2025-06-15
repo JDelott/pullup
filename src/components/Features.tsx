@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Features: React.FC = () => {
+const Features = () => {
   const features = [
     {
       title: "Real-time Form Analysis",

@@ -1,6 +1,13 @@
 import React from 'react';
 
-const Hero: React.FC = () => {
+const Hero = () => {
+  // Define the stats array at the component level
+  const stats = [
+    { label: 'TRACK', desc: 'Real-time metrics' },
+    { label: 'ANALYZE', desc: 'AI form analysis' },
+    { label: 'IMPROVE', desc: 'Personalized plans' }
+  ];
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 overflow-hidden">
       {/* Modern geometric background elements */}
@@ -56,13 +63,9 @@ const Hero: React.FC = () => {
               </button>
             </div>
 
-            {/* Enhanced stats - no icons */}
+            {/* Enhanced stats - FIXED */}
             <div className="grid grid-cols-3 gap-8 pt-12">
-              {[
-                { label: 'TRACK', desc: 'Real-time metrics' },
-                { label: 'ANALYZE', desc: 'AI form analysis' },
-                { label: 'IMPROVE', desc: 'Personalized plans' }
-              ].map((item, index) => (
+              {stats.map((item: any, index:any) => (
                 <div key={index} className="text-center group cursor-pointer">
                   <div className="text-red-400 font-mono text-sm font-bold mb-2">
                     {String(index + 1).padStart(2, '0')}
