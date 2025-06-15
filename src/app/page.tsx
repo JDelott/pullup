@@ -1,6 +1,8 @@
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import PullUpCounter from '@/components/PullUpCounter';
+import Footer from '@/components/Footer';
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-neutral-900">
@@ -16,8 +18,8 @@ export default function Home() {
         <Testimonials />
         <Pricing />
         <CallToAction />
-        <Footer /> 
         */}
+        <Footer /> 
       </div>
     </div>
   );
