@@ -15,7 +15,7 @@ const TestComponent1: React.FC = () => {
   );
 };
 
-// Test 2: Type assignment errors (should show TS2322)
+// Test 2: Type assignment errors (should show TS2322).  ad;lkasjfd
 const TestComponent2: React.FC = () => {
   const [items, setItems] = useState<string[]>([]);
   
