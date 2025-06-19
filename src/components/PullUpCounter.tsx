@@ -172,7 +172,6 @@ const PullUpCounter = () => {
     setSettings(preset.settings);
     setSelectedPreset(preset.name);
   }, []);
-
   return (
     <section className="relative py-24 bg-neutral-900 min-h-screen text-white">
       {/* Decorations */}
@@ -192,7 +191,7 @@ const PullUpCounter = () => {
         {!isWorkoutActive && (
           <div className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {workoutPresets.map((preset) => (
+              {workoutPresets.map((preset:any) => (
                 <button
                   key={preset.name}
                   onClick={() => selectPreset(preset)}
