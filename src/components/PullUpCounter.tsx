@@ -1,54 +1,72 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 
+// ==================== TYPES ====================
 interface WorkoutSettings {
-  targetReps: number;
-  sets: number;
-  restTime: number;
+  readonly targetReps: number;
+  readonly sets: number;
+  readonly restTime: number;
 }
 
 interface WorkoutStats {
-  totalReps: number;
-  totalWorkouts: number;
-  totalTime: number;
-  caloriesBurned: number;
+  readonly totalReps: number;
+  readonly totalWorkouts: number;
+  readonly totalTime: number;
+  readonly caloriesBurned: number;
 }
 
 interface WorkoutPreset {
-  name: string;
-  description: string;
-  settings: WorkoutSettings;
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly settings: WorkoutSettings;
 }
 
+// ==================== CONSTANTS ====================
 const CALORIES_PER_REP = 0.75;
 
-const workoutPresets: WorkoutPreset[] = [
+const WORKOUT_PRESETS: readonly WorkoutPreset[] = [
   {
+    id: 'beginner',
     name: 'Beginner',
     description: '3 sets of 5 reps',
     settings: { targetReps: 5, sets: 3, restTime: 90 },
   },
   {
+    id: 'intermediate',
     name: 'Intermediate',
     description: '5 sets of 8 reps',
     settings: { targetReps: 8, sets: 5, restTime: 60 },
   },
   {
+    id: 'advanced',
     name: 'Advanced',
     description: '8 sets of 10 reps',
     settings: { targetReps: 10, sets: 8, restTime: 45 },
   },
-];
+] as const;
 
-const formTips: string[] = [
+const FORM_TIPS: readonly string[] = [
   'Keep your core tight throughout the movement',
   'Start from a dead hang position',
   'Pull your chest to the bar',
   'Control the descent',
   'Maintain steady breathing',
-];
+] as const;
 
+// ==================== UTILITIES ====================
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const calculateCalories = (reps: number): number =>
+  Math.round(reps * CALORIES_PER_REP);
+
+// ==================== MAIN COMPONENT ====================
 const PullUpCounter = () => {
+  // State Management
   const [settings, setSettings] = useState<WorkoutSettings>({
     targetReps: 10,
     sets: 3,
@@ -62,7 +80,6 @@ const PullUpCounter = () => {
   const [isWorkoutActive, setIsWorkoutActive] = useState<boolean>(false);
   const [workoutStartTime, setWorkoutStartTime] = useState<number>(0);
   const [totalWorkoutTime, setTotalWorkoutTime] = useState<number>(0);
-
   const [selectedPreset, setSelectedPreset] = useState<string>('');
   const [currentTipIndex, setCurrentTipIndex] = useState<number>(0);
 
@@ -73,14 +90,9 @@ const PullUpCounter = () => {
     caloriesBurned: 0,
   });
 
-  const formatTime = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }, []);
-
+  // Effects
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
+    let interval:Timeout | null = null;
 
     if (isWorkoutActive) {
       interval = setInterval(() => {
@@ -94,7 +106,7 @@ const PullUpCounter = () => {
   }, [isWorkoutActive, workoutStartTime]);
 
   useEffect(() => {
-    let restInterval: ReturnType<typeof setInterval> | null = null;
+    let restInterval:Timeout | null = null;
 
     if (isResting && restTimer > 0) {
       restInterval = setInterval(() => {
@@ -115,12 +127,13 @@ const PullUpCounter = () => {
 
   useEffect(() => {
     const tipInterval = setInterval(() => {
-      setCurrentTipIndex((prev) => (prev + 1) % formTips.length);
+      setCurrentTipIndex((prev) => (prev + 1) % FORM_TIPS.length);
     }, 5000);
 
     return () => clearInterval(tipInterval);
   }, []);
 
+  // Event Handlers
   const startWorkout = useCallback((): void => {
     setIsWorkoutActive(true);
     setWorkoutStartTime(Date.now());
@@ -151,7 +164,7 @@ const PullUpCounter = () => {
 
   const completeWorkout = useCallback((): void => {
     const totalReps = (currentSet - 1) * settings.targetReps + currentReps;
-    const caloriesBurned = Math.round(totalReps * CALORIES_PER_REP);
+    const caloriesBurned = calculateCalories(totalReps);
 
     setStats((prev) => ({
       totalReps: prev.totalReps + totalReps,
@@ -172,9 +185,11 @@ const PullUpCounter = () => {
     setSettings(preset.settings);
     setSelectedPreset(preset.name);
   }, []);
+
+  // ==================== RENDER ====================
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white overflow-hidden">
-      {/* Enhanced Background Elements */}
+      {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#00FFD1]/5 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 -left-20 w-80 h-80 bg-white/5 rounded-full blur-2xl"></div>
@@ -186,7 +201,7 @@ const PullUpCounter = () => {
         <header className="text-center mb-16 space-y-6">
           <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#00FFD1]/10 border border-[#00FFD1]/20 rounded-full text-sm font-medium text-[#00FFD1] mb-4">
             <div className="w-2 h-2 bg-[#00FFD1] rounded-full animate-pulse"></div>
-            Live Training Session
+            {isWorkoutActive ? 'Live Training Session' : 'Ready to Train'}
           </div>
 
           <h1 className="text-6xl md:text-7xl font-black leading-tight">
@@ -198,10 +213,10 @@ const PullUpCounter = () => {
 
           <div className="max-w-2xl mx-auto">
             <p className="text-xl text-neutral-300 leading-relaxed">
-              {formTips[currentTipIndex]}
+              {FORM_TIPS[currentTipIndex]}
             </p>
             <div className="flex justify-center mt-4 gap-2">
-              {formTips.map((_, index) => (
+              {FORM_TIPS.map((_, index) => (
                 <div
                   key={index}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentTipIndex ? 'bg-[#00FFD1] w-8' : 'bg-neutral-600'
@@ -221,9 +236,9 @@ const PullUpCounter = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {workoutPresets.map((preset) => (
+              {WORKOUT_PRESETS.map((preset) => (
                 <button
-                  key={preset.name}
+                  key={preset.id}
                   onClick={() => selectPreset(preset)}
                   className={`group relative p-6 rounded-2xl border transition-all duration-300 hover:scale-105 ${selectedPreset === preset.name
                       ? 'border-[#00FFD1] bg-gradient-to-br from-[#00FFD1]/10 to-[#00FFD1]/5 shadow-lg shadow-[#00FFD1]/20'
@@ -254,7 +269,8 @@ const PullUpCounter = () => {
             <div className="flex justify-center">
               <button
                 onClick={startWorkout}
-                className="group relative px-12 py-4 bg-gradient-to-r from-[#00FFD1] to-[#00FFD1]/80 text-black rounded-2xl font-bold text-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00FFD1]/30 active:scale-95"
+                disabled={!selectedPreset}
+                className="group relative px-12 py-4 bg-gradient-to-r from-[#00FFD1] to-[#00FFD1]/80 text-black rounded-2xl font-bold text-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00FFD1]/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="relative z-10">Start Training</span>
                 <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -269,9 +285,11 @@ const PullUpCounter = () => {
             <div className="bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
               {/* Workout Progress Header */}
               <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#00FFD1]/10 rounded-full text-[#00FFD1] text-sm font-medium mb-4">
-                  <div className="w-2 h-2 bg-[#00FFD1] rounded-full animate-pulse"></div>
-                  Workout in Progress
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-4 ${isResting ? 'bg-orange-400/10 text-orange-400' : 'bg-[#00FFD1]/10 text-[#00FFD1]'
+                  }`}>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${isResting ? 'bg-orange-400' : 'bg-[#00FFD1]'
+                    }`}></div>
+                  {isResting ? 'Rest Period' : 'Workout in Progress'}
                 </div>
                 <h2 className="text-3xl font-bold">
                   Set {currentSet} of {settings.sets}
@@ -295,7 +313,7 @@ const PullUpCounter = () => {
                   <div className="w-full bg-neutral-700 rounded-full h-2">
                     <div
                       className="bg-gradient-to-r from-[#00FFD1] to-white h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(currentReps / settings.targetReps) * 100}%` }}
+                      style={{ width: `${Math.min((currentReps / settings.targetReps) * 100, 100)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -361,11 +379,11 @@ const PullUpCounter = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: 'Total Reps', value: stats.totalReps, color: 'text-[#00FFD1]' },
-              { label: 'Workouts', value: stats.totalWorkouts, color: 'text-green-400' },
-              { label: 'Time Trained', value: formatTime(stats.totalTime), color: 'text-blue-400' },
-              { label: 'Calories Burned', value: stats.caloriesBurned, color: 'text-orange-400' },
-            ].map((stat:any) => (
+              { label: 'Total Reps', value: stats.totalReps, color: 'text-[#00FFD1]', bgColor: 'bg-[#00FFD1]' },
+              { label: 'Workouts', value: stats.totalWorkouts, color: 'text-green-400', bgColor: 'bg-green-400' },
+              { label: 'Time Trained', value: formatTime(stats.totalTime), color: 'text-blue-400', bgColor: 'bg-blue-400' },
+              { label: 'Calories Burned', value: stats.caloriesBurned, color: 'text-orange-400', bgColor: 'bg-orange-400' },
+            ].map((stat) => (
               <div key={stat.label} className="text-center space-y-3 p-4 rounded-2xl bg-neutral-800/30">
                 <p className="text-neutral-400 text-sm font-medium tracking-wider uppercase">
                   {stat.label}
@@ -375,11 +393,13 @@ const PullUpCounter = () => {
                 </p>
                 <div className="w-full bg-neutral-700/50 rounded-full h-1">
                   <div
-                    className={`h-1 rounded-full transition-all duration-1000 ${stat.color.includes('00FFD1') ? 'bg-[#00FFD1]' :
-                        stat.color.includes('green') ? 'bg-green-400' :
-                          stat.color.includes('blue') ? 'bg-blue-400' : 'bg-orange-400'
-                      }`}
-                    style={{ width: `${Math.min((typeof stat.value === 'number' ? stat.value : 0) / 100 * 100, 100)}%` }}
+                    className={`h-1 rounded-full transition-all duration-1000 ${stat.bgColor}`}
+                    style={{
+                      width: `${Math.min(
+                        (typeof stat.value === 'number' ? stat.value : 0) / 100 * 100,
+                        100
+                      )}%`
+                    }}
                   ></div>
                 </div>
               </div>
