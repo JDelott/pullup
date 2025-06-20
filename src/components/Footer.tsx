@@ -8,12 +8,10 @@ const Footer = () => {
 
         {/* Brand */}
         <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold text-white mb-2">
-            PULL<span className="text-[#00FFD1]">FORCE</span>
+          <h3 className="text-3xl font-extrabold text-white mb-3 tracking-tight">
+            PULL<span className="text-[#00FFD1] font-black">FORCE</span>
           </h3>
-          <p className="text-gray-400">
-            AI-powered pull-up training that adapts to your fitness level.
-          </p>
+          <p className="text-gray-400 text-lg font-medium">Peak performance unleashed</p>
         </div>
 
         {/* Links */}
