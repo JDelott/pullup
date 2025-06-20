@@ -173,117 +173,217 @@ const PullUpCounter = () => {
     setSelectedPreset(preset.name);
   }, []);
   return (
-    <section className="relative py-24 bg-neutral-900 min-h-screen text-white">
-      {/* Decorations */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 right-20 w-40 h-40 bg-[#00FFD1] rounded-full opacity-10"></div>
-        <div className="absolute bottom-40 left-20 w-60 h-60 bg-white rounded-lg rotate-45 opacity-5"></div>
+    <section className="relative min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white overflow-hidden">
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#00FFD1]/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 -left-20 w-80 h-80 bg-white/5 rounded-full blur-2xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-[#00FFD1]/5 to-transparent rounded-full"></div>
       </div>
 
-      <div className="relative container mx-auto px-4 max-w-4xl">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4">
-            TRACK YOUR <span className="block text-[#00FFD1]">PROGRESS</span>
-          </h1>
-          <p className="text-xl text-gray-400">{formTips[currentTipIndex]}</p>
-        </div>
+      <div className="relative z-10 container mx-auto px-6 py-24 max-w-5xl">
+        {/* Header Section */}
+        <header className="text-center mb-16 space-y-6">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#00FFD1]/10 border border-[#00FFD1]/20 rounded-full text-sm font-medium text-[#00FFD1] mb-4">
+            <div className="w-2 h-2 bg-[#00FFD1] rounded-full animate-pulse"></div>
+            Live Training Session
+          </div>
 
+          <h1 className="text-6xl md:text-7xl font-black leading-tight">
+            TRACK YOUR
+            <span className="block bg-gradient-to-r from-[#00FFD1] to-white bg-clip-text text-transparent">
+              PROGRESS
+            </span>
+          </h1>
+
+          <div className="max-w-2xl mx-auto">
+            <p className="text-xl text-neutral-300 leading-relaxed">
+              {formTips[currentTipIndex]}
+            </p>
+            <div className="flex justify-center mt-4 gap-2">
+              {formTips.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentTipIndex ? 'bg-[#00FFD1] w-8' : 'bg-neutral-600'
+                    }`}
+                />
+              ))}
+            </div>
+          </div>
+        </header>
+
+        {/* Workout Setup */}
         {!isWorkoutActive && (
-          <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {workoutPresets.map((preset:any) => (
+          <div className="mb-12 space-y-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-neutral-300 mb-2">Choose Your Challenge</h2>
+              <p className="text-neutral-400">Select a preset or customize your workout</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {workoutPresets.map((preset) => (
                 <button
                   key={preset.name}
                   onClick={() => selectPreset(preset)}
-                  className={`p-4 rounded-lg border transition-colors ${selectedPreset === preset.name
-                      ? 'border-[#00FFD1] bg-[#00FFD1]/10'
-                      : 'border-gray-700 hover:border-[#00FFD1]'
+                  className={`group relative p-6 rounded-2xl border transition-all duration-300 hover:scale-105 ${selectedPreset === preset.name
+                      ? 'border-[#00FFD1] bg-gradient-to-br from-[#00FFD1]/10 to-[#00FFD1]/5 shadow-lg shadow-[#00FFD1]/20'
+                      : 'border-neutral-700 bg-neutral-800/50 hover:border-[#00FFD1]/50 hover:bg-neutral-800/70'
                     }`}
                 >
-                  <h3 className="font-bold mb-2">{preset.name}</h3>
-                  <p className="text-sm text-gray-400">{preset.description}</p>
+                  <div className="text-left space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold">{preset.name}</h3>
+                      {selectedPreset === preset.name && (
+                        <div className="w-3 h-3 bg-[#00FFD1] rounded-full"></div>
+                      )}
+                    </div>
+                    <p className="text-neutral-400 text-sm leading-relaxed">
+                      {preset.description}
+                    </p>
+                    <div className="pt-2 border-t border-neutral-700/50">
+                      <div className="flex justify-between text-xs text-neutral-500">
+                        <span>Rest: {preset.settings.restTime}s</span>
+                        <span>Total: {preset.settings.sets * preset.settings.targetReps} reps</span>
+                      </div>
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>
 
-            <button
-              onClick={startWorkout}
-              className="w-full py-4 bg-[#00FFD1] hover:bg-[#00FFD1]/80 text-black rounded-lg font-bold text-xl transition-colors"
-            >
-              Start Training
-            </button>
+            <div className="flex justify-center">
+              <button
+                onClick={startWorkout}
+                className="group relative px-12 py-4 bg-gradient-to-r from-[#00FFD1] to-[#00FFD1]/80 text-black rounded-2xl font-bold text-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00FFD1]/30 active:scale-95"
+              >
+                <span className="relative z-10">Start Training</span>
+                <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+            </div>
           </div>
         )}
 
+        {/* Active Workout Interface */}
         {isWorkoutActive && (
-          <div className="bg-neutral-800/50 backdrop-blur-sm border border-white/10 rounded-lg p-6 mb-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center">
-                <p className="text-gray-400 font-mono text-sm">SET</p>
-                <p className="text-3xl font-bold">
-                  {currentSet}/{settings.sets}
-                </p>
+          <div className="mb-12">
+            <div className="bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+              {/* Workout Progress Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#00FFD1]/10 rounded-full text-[#00FFD1] text-sm font-medium mb-4">
+                  <div className="w-2 h-2 bg-[#00FFD1] rounded-full animate-pulse"></div>
+                  Workout in Progress
+                </div>
+                <h2 className="text-3xl font-bold">
+                  Set {currentSet} of {settings.sets}
+                </h2>
               </div>
-              <div className="text-center">
-                <p className="text-gray-400 font-mono text-sm">REPS</p>
-                <p className="text-3xl font-bold">
-                  {currentReps}/{settings.targetReps}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-400 font-mono text-sm">
-                  {isResting ? 'REST' : 'READY'}
-                </p>
-                <p className="text-3xl font-bold">
-                  {isResting ? restTimer : '✓'}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-400 font-mono text-sm">TIME</p>
-                <p className="text-3xl font-bold">{formatTime(totalWorkoutTime)}</p>
-              </div>
-            </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={addRep}
-                disabled={isResting}
-                className={`flex-1 py-4 rounded-lg font-bold text-xl transition-colors ${isResting
-                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                    : 'bg-[#00FFD1] hover:bg-[#00FFD1]/80 text-black'
-                  }`}
-              >
-                {isResting ? `Rest ${restTimer}s` : 'Add Rep'}
-              </button>
-              <button
-                onClick={completeWorkout}
-                className="px-6 py-4 border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-black transition-colors"
-              >
-                End
-              </button>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div className="text-center space-y-2">
+                  <p className="text-neutral-400 text-sm font-medium tracking-wider uppercase">Current Set</p>
+                  <p className="text-4xl font-black text-[#00FFD1]">
+                    {currentSet}<span className="text-2xl text-neutral-500">/{settings.sets}</span>
+                  </p>
+                </div>
+
+                <div className="text-center space-y-2">
+                  <p className="text-neutral-400 text-sm font-medium tracking-wider uppercase">Reps Done</p>
+                  <p className="text-4xl font-black">
+                    {currentReps}<span className="text-2xl text-neutral-500">/{settings.targetReps}</span>
+                  </p>
+                  <div className="w-full bg-neutral-700 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-[#00FFD1] to-white h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(currentReps / settings.targetReps) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="text-center space-y-2">
+                  <p className="text-neutral-400 text-sm font-medium tracking-wider uppercase">
+                    {isResting ? 'Rest Time' : 'Status'}
+                  </p>
+                  <p className={`text-4xl font-black ${isResting ? 'text-orange-400' : 'text-green-400'}`}>
+                    {isResting ? restTimer : 'READY'}
+                  </p>
+                  {isResting && (
+                    <div className="w-full bg-neutral-700 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-orange-400 to-red-400 h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${((settings.restTime - restTimer) / settings.restTime) * 100}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-center space-y-2">
+                  <p className="text-neutral-400 text-sm font-medium tracking-wider uppercase">Duration</p>
+                  <p className="text-4xl font-black font-mono">{formatTime(totalWorkoutTime)}</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <button
+                  onClick={addRep}
+                  disabled={isResting}
+                  className={`flex-1 py-4 rounded-2xl font-bold text-xl transition-all duration-300 ${isResting
+                      ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-[#00FFD1] to-[#00FFD1]/80 text-black hover:scale-105 hover:shadow-lg hover:shadow-[#00FFD1]/30 active:scale-95'
+                    }`}
+                >
+                  {isResting ? `Rest ${restTimer}s` : 'Complete Rep'}
+                </button>
+
+                <button
+                  onClick={completeWorkout}
+                  className="px-8 py-4 border-2 border-white/20 text-white font-bold rounded-2xl hover:bg-white hover:text-black transition-all duration-300 hover:scale-105 active:scale-95"
+                >
+                  Finish
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="bg-neutral-800/50 backdrop-blur-sm border border-white/10 rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Your Progress</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <p className="text-gray-400 font-mono text-sm">TOTAL REPS</p>
-              <p className="text-2xl font-bold">{stats.totalReps}</p>
+        {/* Progress Statistics */}
+        <div className="bg-gradient-to-br from-neutral-800/60 to-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Your Progress</h2>
+              <p className="text-neutral-400">Track your fitness journey</p>
             </div>
-            <div className="text-center">
-              <p className="text-gray-400 font-mono text-sm">WORKOUTS</p>
-              <p className="text-2xl font-bold">{stats.totalWorkouts}</p>
+            <div className="w-16 h-16 bg-gradient-to-br from-[#00FFD1]/20 to-[#00FFD1]/5 rounded-2xl flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#00FFD1] rounded-lg"></div>
             </div>
-            <div className="text-center">
-              <p className="text-gray-400 font-mono text-sm">TIME</p>
-              <p className="text-2xl font-bold">{formatTime(stats.totalTime)}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-400 font-mono text-sm">CALORIES</p>
-              <p className="text-2xl font-bold">{stats.caloriesBurned}</p>
-            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { label: 'Total Reps', value: stats.totalReps, color: 'text-[#00FFD1]' },
+              { label: 'Workouts', value: stats.totalWorkouts, color: 'text-green-400' },
+              { label: 'Time Trained', value: formatTime(stats.totalTime), color: 'text-blue-400' },
+              { label: 'Calories Burned', value: stats.caloriesBurned, color: 'text-orange-400' },
+            ].map((stat:any) => (
+              <div key={stat.label} className="text-center space-y-3 p-4 rounded-2xl bg-neutral-800/30">
+                <p className="text-neutral-400 text-sm font-medium tracking-wider uppercase">
+                  {stat.label}
+                </p>
+                <p className={`text-3xl font-black ${stat.color}`}>
+                  {stat.value}
+                </p>
+                <div className="w-full bg-neutral-700/50 rounded-full h-1">
+                  <div
+                    className={`h-1 rounded-full transition-all duration-1000 ${stat.color.includes('00FFD1') ? 'bg-[#00FFD1]' :
+                        stat.color.includes('green') ? 'bg-green-400' :
+                          stat.color.includes('blue') ? 'bg-blue-400' : 'bg-orange-400'
+                      }`}
+                    style={{ width: `${Math.min((typeof stat.value === 'number' ? stat.value : 0) / 100 * 100, 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
