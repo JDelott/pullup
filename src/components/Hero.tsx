@@ -1,4 +1,6 @@
 import React from 'react';
+import Link from 'next/link';
+
 
 const Hero = () => {
   return (
@@ -32,12 +34,12 @@ const Hero = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <button className="px-10 py-4 bg-[#00FFD1] text-black font-bold tracking-wide hover:bg-[#1AFFD6] transition-colors duration-200 text-lg">
+          <Link href="/signup" className="px-10 py-4 bg-[#00FFD1] text-black font-bold tracking-wide hover:bg-[#1AFFD6] transition-colors duration-200 text-lg">
             START TRAINING
-          </button>
-          <button className="px-10 py-4 border border-gray-600 text-white font-bold tracking-wide hover:border-[#00FFD1] hover:text-[#00FFD1] transition-all duration-200 text-lg">
-            WATCH DEMO
-          </button>
+          </Link>
+          <Link href="/login" className="px-10 py-4 border border-gray-600 text-white font-bold tracking-wide hover:border-[#00FFD1] hover:text-[#00FFD1] transition-all duration-200 text-lg">
+            LOGIN
+          </Link>
         </div>
 
         {/* Simple stats */}
