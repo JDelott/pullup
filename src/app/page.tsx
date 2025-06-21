@@ -2,6 +2,7 @@ import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import PullUpCounter from '@/components/PullUpCounter';
 import Footer from '@/components/Footer';
+import Testimonials from '@/components/Testimonial';
 
 export default function Home() {
   return (
@@ -12,10 +13,10 @@ export default function Home() {
         <Hero />
         {/* Features Section */}
         <Features />
+        <Testimonials />
         <PullUpCounter/>
         {/* You can add more sections here as you build them */}
         {/* Example structure for future sections:
-        <Testimonials />
         <Pricing />
         <CallToAction />
         */}
