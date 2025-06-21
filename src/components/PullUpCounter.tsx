@@ -2,10 +2,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
 // ==================== TYPES ====================
+interface VoiceSettings {
+  readonly enabled: boolean;
+  readonly pace: 'slow' | 'medium' | 'fast' | 'custom';
+  readonly customTiming: {
+    readonly upDuration: number;
+    readonly holdDuration: number;
+    readonly downDuration: number;
+    readonly restDuration: number;
+  };
+  readonly voice: SpeechSynthesisVoice | null;
+  readonly volume: number;
+  readonly pitch: number;
+}
+
 interface WorkoutSettings {
   readonly targetReps: number;
   readonly sets: number;
   readonly restTime: number;
+  readonly voice: VoiceSettings;
 }
 
 interface WorkoutStats {
@@ -25,24 +40,77 @@ interface WorkoutPreset {
 // ==================== CONSTANTS ====================
 const CALORIES_PER_REP = 0.75;
 
+const VOICE_PACE_PRESETS = {
+  slow: { upDuration: 3, holdDuration: 1, downDuration: 4, restDuration: 2 },
+  medium: { upDuration: 2, holdDuration: 0.5, downDuration: 3, restDuration: 1.5 },
+  fast: { upDuration: 1.5, holdDuration: 0.5, downDuration: 2, restDuration: 1 },
+  custom: { upDuration: 2, holdDuration: 1, downDuration: 3, restDuration: 1.5 },
+} as const;
+
+const VOICE_COMMANDS = {
+  start: ['Get ready', 'Starting workout', 'Let\'s begin'],
+  up: ['Pull up', 'Up', 'Lift', 'Pull'],
+  hold: ['Hold', 'Squeeze', 'Top position'],
+  down: ['Lower down', 'Down', 'Control the descent', 'Slowly down'],
+  rest: ['Rest', 'Take a break', 'Breathe'],
+  complete: ['Great job', 'Set complete', 'Well done'],
+  finish: ['Workout complete', 'Excellent work', 'Training finished'],
+} as const;
+
 const WORKOUT_PRESETS: readonly WorkoutPreset[] = [
   {
     id: 'beginner',
     name: 'Beginner',
     description: '3 sets of 5 reps',
-    settings: { targetReps: 5, sets: 3, restTime: 90 },
+    settings: {
+      targetReps: 5,
+      sets: 3,
+      restTime: 90,
+      voice: {
+        enabled: false,
+        pace: 'medium',
+        customTiming: VOICE_PACE_PRESETS.medium,
+        voice: null,
+        volume: 0.8,
+        pitch: 1,
+      }
+    },
   },
   {
     id: 'intermediate',
     name: 'Intermediate',
     description: '5 sets of 8 reps',
-    settings: { targetReps: 8, sets: 5, restTime: 60 },
+    settings: {
+      targetReps: 8,
+      sets: 5,
+      restTime: 60,
+      voice: {
+        enabled: false,
+        pace: 'medium',
+        customTiming: VOICE_PACE_PRESETS.medium,
+        voice: null,
+        volume: 0.8,
+        pitch: 1,
+      }
+    },
   },
   {
     id: 'advanced',
     name: 'Advanced',
     description: '8 sets of 10 reps',
-    settings: { targetReps: 10, sets: 8, restTime: 45 },
+    settings: {
+      targetReps: 10,
+      sets: 8,
+      restTime: 45,
+      voice: {
+        enabled: false,
+        pace: 'medium',
+        customTiming: VOICE_PACE_PRESETS.medium,
+        voice: null,
+        volume: 0.8,
+        pitch: 1,
+      }
+    },
   },
 ] as const;
 
@@ -64,13 +132,215 @@ const formatTime = (seconds: number): string => {
 const calculateCalories = (reps: number): number =>
   Math.round(reps * CALORIES_PER_REP);
 
+// ==================== VOICE COACHING HOOK ====================
+const useVoiceCoaching = () => {
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isSupported, setIsSupported] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      setIsSupported(true);
+
+      const loadVoices = () => {
+        const availableVoices = speechSynthesis.getVoices();
+        setVoices(availableVoices);
+      };
+
+      loadVoices();
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
+  const speak = useCallback((
+    text: string,
+    voiceSettings: VoiceSettings
+  ): void => {
+    if (!isSupported || !voiceSettings.enabled) return;
+
+    speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    if (voiceSettings.voice) {
+      utterance.voice = voiceSettings.voice;
+    }
+
+    utterance.volume = voiceSettings.volume;
+    utterance.pitch = voiceSettings.pitch;
+    utterance.rate = 1;
+
+    speechSynthesis.speak(utterance);
+  }, [isSupported]);
+
+  const getRandomCommand = useCallback((commands: readonly string[]): string => {
+    return commands[Math.floor(Math.random() * commands.length)];
+  }, []);
+
+  return { voices, isSupported, speak, getRandomCommand };
+};
+
+// ==================== VOICE SETTINGS COMPONENT ====================
+const VoiceSettingsPanel: React.FC<{
+  voiceSettings: VoiceSettings;
+  voices: SpeechSynthesisVoice[];
+  onSettingsChange: (settings: VoiceSettings) => void;
+  isSupported: boolean;
+}> = ({ voiceSettings, voices, onSettingsChange, isSupported }) => {
+  if (!isSupported) {
+    return (
+      <div className="p-4 bg-neutral-800/50 rounded-xl border border-neutral-700">
+        <p className="text-neutral-400 text-sm">Voice coaching not supported in this browser</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-6 bg-gradient-to-br from-neutral-800/60 to-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-2xl">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold">Voice Coaching</h3>
+        <button
+          onClick={() => onSettingsChange({
+            ...voiceSettings,
+            enabled: !voiceSettings.enabled
+          })}
+          className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${voiceSettings.enabled ? 'bg-[#00FFD1]' : 'bg-neutral-600'
+            }`}
+        >
+          <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ${voiceSettings.enabled ? 'translate-x-6' : 'translate-x-0.5'
+            }`} />
+        </button>
+      </div>
+
+      {voiceSettings.enabled && (
+        <>
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-neutral-300">Movement Pace</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {Object.keys(VOICE_PACE_PRESETS).map((pace) => (
+                <button
+                  key={pace}
+                  onClick={() => onSettingsChange({
+                    ...voiceSettings,
+                    pace: pace as VoiceSettings['pace'],
+                    customTiming: VOICE_PACE_PRESETS[pace as keyof typeof VOICE_PACE_PRESETS]
+                  })}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${voiceSettings.pace === pace
+                      ? 'bg-[#00FFD1] text-black'
+                      : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                    }`}
+                >
+                  {pace.charAt(0).toUpperCase() + pace.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {voiceSettings.pace === 'custom' && (
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(voiceSettings.customTiming).map(([key, value]) => (
+                <div key={key} className="space-y-2">
+                  <label className="text-xs font-medium text-neutral-400 capitalize">
+                    {key.replace('Duration', '')} ({value}s)
+                  </label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="5"
+                    step="0.5"
+                    value={value}
+                    onChange={(e) => onSettingsChange({
+                      ...voiceSettings,
+                      customTiming: {
+                        ...voiceSettings.customTiming,
+                        [key]: parseFloat(e.target.value)
+                      }
+                    })}
+                    className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-neutral-300">Voice</label>
+            <select
+              value={voiceSettings.voice?.name || ''}
+              onChange={(e) => {
+                const selectedVoice = voices.find(v => v.name === e.target.value) || null;
+                onSettingsChange({ ...voiceSettings, voice: selectedVoice });
+              }}
+              className="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white focus:border-[#00FFD1] focus:outline-none"
+            >
+              <option value="">Default Voice</option>
+              {voices.map((voice) => (
+                <option key={voice.name} value={voice.name}>
+                  {voice.name} ({voice.lang})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-neutral-400">
+                Volume ({Math.round(voiceSettings.volume * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={voiceSettings.volume}
+                onChange={(e) => onSettingsChange({
+                  ...voiceSettings,
+                  volume: parseFloat(e.target.value)
+                })}
+                className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-neutral-400">
+                Pitch ({voiceSettings.pitch})
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={voiceSettings.pitch}
+                onChange={(e) => onSettingsChange({
+                  ...voiceSettings,
+                  pitch: parseFloat(e.target.value)
+                })}
+                className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 // ==================== MAIN COMPONENT ====================
 const PullUpCounter = () => {
+  // Voice coaching hook
+  const { voices, isSupported, speak, getRandomCommand } = useVoiceCoaching();
+
   // State Management
   const [settings, setSettings] = useState<WorkoutSettings>({
     targetReps: 10,
     sets: 3,
     restTime: 60,
+    voice: {
+      enabled: false,
+      pace: 'medium',
+      customTiming: VOICE_PACE_PRESETS.medium,
+      voice: null,
+      volume: 0.8,
+      pitch: 1,
+    },
   });
 
   const [currentSet, setCurrentSet] = useState<number>(1);
@@ -82,6 +352,9 @@ const PullUpCounter = () => {
   const [totalWorkoutTime, setTotalWorkoutTime] = useState<number>(0);
   const [selectedPreset, setSelectedPreset] = useState<string>('');
   const [currentTipIndex, setCurrentTipIndex] = useState<number>(0);
+  const [voiceCoachingActive, setVoiceCoachingActive] = useState<boolean>(false);
+  const [currentPhase, setCurrentPhase] = useState<'ready' | 'up' | 'hold' | 'down' | 'rest'>('ready');
+  const [showVoiceSettings, setShowVoiceSettings] = useState<boolean>(false);
 
   const [stats, setStats] = useState<WorkoutStats>({
     totalReps: 0,
@@ -92,7 +365,7 @@ const PullUpCounter = () => {
 
   // Effects
   useEffect(() => {
-    let interval:Timeout | null = null;
+    let interval: NodeJS.Timeout | null = null;
 
     if (isWorkoutActive) {
       interval = setInterval(() => {
@@ -106,7 +379,7 @@ const PullUpCounter = () => {
   }, [isWorkoutActive, workoutStartTime]);
 
   useEffect(() => {
-    let restInterval:Timeout | null = null;
+    let restInterval: NodeJS.Timeout | null = null;
 
     if (isResting && restTimer > 0) {
       restInterval = setInterval(() => {
@@ -133,6 +406,53 @@ const PullUpCounter = () => {
     return () => clearInterval(tipInterval);
   }, []);
 
+  // Voice coaching effect
+  useEffect(() => {
+    if (!settings.voice.enabled || !isWorkoutActive || isResting) return;
+
+    let phaseTimer: NodeJS.Timeout;
+    const timing = settings.voice.pace === 'custom'
+      ? settings.voice.customTiming
+      : VOICE_PACE_PRESETS[settings.voice.pace];
+
+    const runVoiceCoaching = () => {
+      setCurrentPhase('up');
+      speak(getRandomCommand(VOICE_COMMANDS.up), settings.voice);
+
+      phaseTimer = setTimeout(() => {
+        setCurrentPhase('hold');
+        speak(getRandomCommand(VOICE_COMMANDS.hold), settings.voice);
+
+        phaseTimer = setTimeout(() => {
+          setCurrentPhase('down');
+          speak(getRandomCommand(VOICE_COMMANDS.down), settings.voice);
+
+          phaseTimer = setTimeout(() => {
+            setCurrentPhase('rest');
+            if (currentReps + 1 < settings.targetReps) {
+              speak(getRandomCommand(VOICE_COMMANDS.rest), settings.voice);
+            }
+
+            phaseTimer = setTimeout(() => {
+              setCurrentPhase('ready');
+              if (currentReps + 1 < settings.targetReps) {
+                runVoiceCoaching();
+              }
+            }, timing.restDuration * 1000);
+          }, timing.downDuration * 1000);
+        }, timing.holdDuration * 1000);
+      }, timing.upDuration * 1000);
+    };
+
+    if (voiceCoachingActive && currentReps < settings.targetReps) {
+      runVoiceCoaching();
+    }
+
+    return () => {
+      if (phaseTimer) clearTimeout(phaseTimer);
+    };
+  }, [voiceCoachingActive, currentReps, settings.voice, isWorkoutActive, isResting, speak, getRandomCommand]);
+
   // Event Handlers
   const startWorkout = useCallback((): void => {
     setIsWorkoutActive(true);
@@ -142,7 +462,12 @@ const PullUpCounter = () => {
     setIsResting(false);
     setRestTimer(0);
     setTotalWorkoutTime(0);
-  }, []);
+
+    if (settings.voice.enabled) {
+      setVoiceCoachingActive(true);
+      speak(getRandomCommand(VOICE_COMMANDS.start), settings.voice);
+    }
+  }, [settings.voice, speak, getRandomCommand]);
 
   const addRep = useCallback((): void => {
     if (!isWorkoutActive || isResting) return;
@@ -151,16 +476,27 @@ const PullUpCounter = () => {
     setCurrentReps(newReps);
 
     if (newReps >= settings.targetReps) {
+      setVoiceCoachingActive(false);
+      if (settings.voice.enabled) {
+        speak(getRandomCommand(VOICE_COMMANDS.complete), settings.voice);
+      }
+
       if (currentSet < settings.sets) {
         setIsResting(true);
         setRestTimer(settings.restTime);
         setCurrentSet((prev) => prev + 1);
         setCurrentReps(0);
+
+        setTimeout(() => {
+          if (settings.voice.enabled) {
+            setVoiceCoachingActive(true);
+          }
+        }, settings.restTime * 1000);
       } else {
         completeWorkout();
       }
     }
-  }, [currentReps, currentSet, settings, isWorkoutActive, isResting]);
+  }, [currentReps, currentSet, settings, isWorkoutActive, isResting, speak, getRandomCommand]);
 
   const completeWorkout = useCallback((): void => {
     const totalReps = (currentSet - 1) * settings.targetReps + currentReps;
@@ -179,12 +515,42 @@ const PullUpCounter = () => {
     setCurrentReps(0);
     setIsResting(false);
     setRestTimer(0);
-  }, [currentSet, currentReps, settings.targetReps, totalWorkoutTime]);
+    setVoiceCoachingActive(false);
+
+    if (settings.voice.enabled) {
+      speak(getRandomCommand(VOICE_COMMANDS.finish), settings.voice);
+    }
+  }, [currentSet, currentReps, settings.targetReps, totalWorkoutTime, settings.voice, speak, getRandomCommand]);
 
   const selectPreset = useCallback((preset: WorkoutPreset): void => {
     setSettings(preset.settings);
     setSelectedPreset(preset.name);
   }, []);
+
+  // Voice coaching indicator
+  const renderVoiceCoachingIndicator = () => {
+    if (!settings.voice.enabled || !voiceCoachingActive) return null;
+
+    const phaseColors = {
+      ready: 'text-neutral-400',
+      up: 'text-[#00FFD1]',
+      hold: 'text-yellow-400',
+      down: 'text-orange-400',
+      rest: 'text-green-400',
+    };
+
+    return (
+      <div className="text-center mb-6">
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-neutral-800/50 ${phaseColors[currentPhase]}`}>
+          <div className={`w-2 h-2 rounded-full animate-pulse ${currentPhase === 'up' ? 'bg-[#00FFD1]' :
+              currentPhase === 'hold' ? 'bg-yellow-400' :
+                currentPhase === 'down' ? 'bg-orange-400' : 'bg-green-400'
+            }`}></div>
+          Voice Coaching: {currentPhase.toUpperCase()}
+        </div>
+      </div>
+    );
+  };
 
   // ==================== RENDER ====================
   return (
@@ -241,8 +607,8 @@ const PullUpCounter = () => {
                   key={preset.id}
                   onClick={() => selectPreset(preset)}
                   className={`group relative p-6 rounded-2xl border transition-all duration-300 hover:scale-105 ${selectedPreset === preset.name
-                      ? 'border-[#00FFD1] bg-gradient-to-br from-[#00FFD1]/10 to-[#00FFD1]/5 shadow-lg shadow-[#00FFD1]/20'
-                      : 'border-neutral-700 bg-neutral-800/50 hover:border-[#00FFD1]/50 hover:bg-neutral-800/70'
+                    ? 'border-[#00FFD1] bg-gradient-to-br from-[#00FFD1]/10 to-[#00FFD1]/5 shadow-lg shadow-[#00FFD1]/20'
+                    : 'border-neutral-700 bg-neutral-800/50 hover:border-[#00FFD1]/50 hover:bg-neutral-800/70'
                     }`}
                 >
                   <div className="text-left space-y-3">
@@ -265,6 +631,29 @@ const PullUpCounter = () => {
                 </button>
               ))}
             </div>
+
+            {/* Voice Settings Toggle */}
+            <div className="flex justify-center mb-6">
+              <button
+                onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+                className="flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-xl hover:border-[#00FFD1]/50 transition-all duration-300"
+              >
+                <span className="text-sm font-medium">Voice Coaching</span>
+                <div className={`transform transition-transform duration-300 ${showVoiceSettings ? 'rotate-180' : ''}`}>
+                  ↓
+                </div>
+              </button>
+            </div>
+
+            {/* Voice Settings Panel */}
+            {showVoiceSettings && (
+              <VoiceSettingsPanel
+                voiceSettings={settings.voice}
+                voices={voices}
+                onSettingsChange={(voiceSettings) => setSettings(prev => ({ ...prev, voice: voiceSettings }))}
+                isSupported={isSupported}
+              />
+            )}
 
             <div className="flex justify-center">
               <button
@@ -295,6 +684,9 @@ const PullUpCounter = () => {
                   Set {currentSet} of {settings.sets}
                 </h2>
               </div>
+
+              {/* Voice Coaching Indicator */}
+              {renderVoiceCoachingIndicator()}
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -347,12 +739,24 @@ const PullUpCounter = () => {
                   onClick={addRep}
                   disabled={isResting}
                   className={`flex-1 py-4 rounded-2xl font-bold text-xl transition-all duration-300 ${isResting
-                      ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-[#00FFD1] to-[#00FFD1]/80 text-black hover:scale-105 hover:shadow-lg hover:shadow-[#00FFD1]/30 active:scale-95'
+                    ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-[#00FFD1] to-[#00FFD1]/80 text-black hover:scale-105 hover:shadow-lg hover:shadow-[#00FFD1]/30 active:scale-95'
                     }`}
                 >
                   {isResting ? `Rest ${restTimer}s` : 'Complete Rep'}
                 </button>
+
+                {settings.voice.enabled && (
+                  <button
+                    onClick={() => setVoiceCoachingActive(!voiceCoachingActive)}
+                    className={`px-6 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 ${voiceCoachingActive
+                        ? 'bg-[#00FFD1] text-black'
+                        : 'border-2 border-[#00FFD1] text-[#00FFD1] hover:bg-[#00FFD1] hover:text-black'
+                      }`}
+                  >
+                    🎤
+                  </button>
+                )}
 
                 <button
                   onClick={completeWorkout}
