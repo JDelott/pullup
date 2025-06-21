@@ -1,4 +1,6 @@
-import React from 'react';
+'use client'
+
+import React, { useState, useEffect } from 'react';
 
 interface TestimonialData {
   readonly id: string;
@@ -45,6 +47,72 @@ const testimonials: readonly TestimonialData[] = [
     pullUpsBefore: 12,
     pullUpsAfter: 30,
     timeframe: '6 months'
+  },
+  {
+    id: '4',
+    name: 'Emily Watson',
+    role: 'Personal Trainer',
+    avatar: '/avatars/emily.jpg',
+    content: 'I recommend PullForce to all my clients now. The biomechanical analysis is spot-on, and the progression tracking helps me design better programs. Game changer for the fitness industry.',
+    rating: 5,
+    pullUpsBefore: 6,
+    pullUpsAfter: 22,
+    timeframe: '5 months'
+  },
+  {
+    id: '5',
+    name: 'Alex Thompson',
+    role: 'College Student',
+    avatar: '/avatars/alex.jpg',
+    content: 'Started from zero pull-ups and felt embarrassed at the gym. PullForce gave me the confidence to train properly. Now I\'m helping my friends with their form!',
+    rating: 5,
+    pullUpsBefore: 0,
+    pullUpsAfter: 12,
+    timeframe: '4 months'
+  },
+  {
+    id: '6',
+    name: 'Jessica Park',
+    role: 'Physical Therapist',
+    avatar: '/avatars/jessica.jpg',
+    content: 'The injury prevention features are outstanding. As a PT, I appreciate how the app prioritizes proper movement patterns over just rep counts. Brilliant engineering.',
+    rating: 5,
+    pullUpsBefore: 4,
+    pullUpsAfter: 18,
+    timeframe: '3 months'
+  },
+  {
+    id: '7',
+    name: 'Ryan Mitchell',
+    role: 'Fire Fighter',
+    avatar: '/avatars/ryan.jpg',
+    content: 'Physical fitness is crucial in my job. PullForce helped me exceed department standards and gave me the edge I needed for promotions. The accountability features are perfect.',
+    rating: 5,
+    pullUpsBefore: 10,
+    pullUpsAfter: 35,
+    timeframe: '6 months'
+  },
+  {
+    id: '8',
+    name: 'Lisa Chang',
+    role: 'Yoga Instructor',
+    avatar: '/avatars/lisa.jpg',
+    content: 'I was skeptical about AI coaching, but the form corrections were incredibly accurate. It helped me build the upper body strength I was missing in my practice.',
+    rating: 5,
+    pullUpsBefore: 2,
+    pullUpsAfter: 14,
+    timeframe: '5 months'
+  },
+  {
+    id: '9',
+    name: 'Michael Torres',
+    role: 'Rock Climber',
+    avatar: '/avatars/michael.jpg',
+    content: 'The grip strength analysis and finger positioning feedback translated directly to my climbing performance. My project routes feel so much more manageable now.',
+    rating: 5,
+    pullUpsBefore: 15,
+    pullUpsAfter: 40,
+    timeframe: '4 months'
   }
 ] as const;
 
@@ -52,11 +120,11 @@ interface TestimonialCardProps {
   readonly testimonial: TestimonialData;
 }
 
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
+const TestimonialCard = ({ testimonial }: TestimonialCardProps): JSX.Element => {
   const { name, role, content, rating, pullUpsBefore, pullUpsAfter, timeframe } = testimonial;
 
   return (
-    <div className="relative bg-neutral-900 border border-gray-800 p-8 group hover:border-[#00FFD1]/30 transition-all duration-300">
+    <div className="bg-neutral-900 border border-gray-800 p-8 hover:border-[#00FFD1]/30 transition-all duration-300 h-full flex flex-col">
       {/* Rating */}
       <div className="flex gap-1 mb-6">
         {Array.from({ length: rating }, (_, i) => (
@@ -65,7 +133,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
       </div>
 
       {/* Content */}
-      <blockquote className="text-gray-300 text-lg leading-relaxed mb-8">
+      <blockquote className="text-gray-300 text-lg leading-relaxed mb-8 flex-grow">
         "{content}"
       </blockquote>
 
@@ -105,11 +173,57 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
   );
 };
 
-const Testimonials: React.FC = () => {
+const Testimonials = (): JSX.Element => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardsToShow, setCardsToShow] = useState(3);
+
+  // Update cards to show based on screen size
+  useEffect(() => {
+    const updateCardsToShow = () => {
+      if (window.innerWidth < 768) {
+        setCardsToShow(1);
+      } else if (window.innerWidth < 1024) {
+        setCardsToShow(2);
+      } else {
+        setCardsToShow(3);
+      }
+    };
+
+    updateCardsToShow();
+    window.addEventListener('resize', updateCardsToShow);
+    return () => window.removeEventListener('resize', updateCardsToShow);
+  }, []);
+
+  // Auto-advance carousel
+  useEffect(() => {
+    const maxIndex = testimonials.length - cardsToShow;
+    const timer = setInterval(() => {
+      setCurrentIndex(prev => prev >= maxIndex ? 0 : prev + 1);
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [cardsToShow]);
+
+  const nextSlide = () => {
+    const maxIndex = testimonials.length - cardsToShow;
+    setCurrentIndex(prev => prev >= maxIndex ? 0 : prev + 1);
+  };
+
+  const prevSlide = () => {
+    const maxIndex = testimonials.length - cardsToShow;
+    setCurrentIndex(prev => prev <= 0 ? maxIndex : prev - 1);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  const maxIndex = testimonials.length - cardsToShow;
+  const visibleTestimonials = testimonials.slice(currentIndex, currentIndex + cardsToShow);
+
   return (
     <section className="bg-neutral-950 py-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-
         {/* Section header */}
         <div className="text-center mb-20">
           <div className="inline-block mb-8">
@@ -129,10 +243,58 @@ const Testimonials: React.FC = () => {
           </p>
         </div>
 
-        {/* Testimonials grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-          {testimonials.map((testimonial) => (
-            <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+        {/* Carousel */}
+        <div className="relative mb-12">
+          {/* Cards container */}
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-500 ease-in-out gap-8"
+              style={{ transform: `translateX(-${currentIndex * (100 / cardsToShow)}%)` }}
+            >
+              {testimonials.map((testimonial) => (
+                <div
+                  key={testimonial.id}
+                  className="flex-shrink-0"
+                  style={{ width: `calc(${100 / cardsToShow}% - ${(cardsToShow - 1) * 2}rem / ${cardsToShow})` }}
+                >
+                  <TestimonialCard testimonial={testimonial} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Navigation buttons */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-neutral-900 border border-gray-700 hover:border-[#00FFD1]/50 p-3 transition-all duration-200"
+            aria-label="Previous testimonials"
+          >
+            <svg className="w-5 h-5 text-gray-400 hover:text-[#00FFD1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-neutral-900 border border-gray-700 hover:border-[#00FFD1]/50 p-3 transition-all duration-200"
+            aria-label="Next testimonials"
+          >
+            <svg className="w-5 h-5 text-gray-400 hover:text-[#00FFD1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Dots indicator */}
+        <div className="flex justify-center gap-2 mb-16">
+          {Array.from({ length: maxIndex + 1 }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`w-2 h-2 rounded-full transition-all duration-200 ${i === currentIndex ? 'bg-[#00FFD1] w-8' : 'bg-gray-600 hover:bg-gray-500'
+                }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
           ))}
         </div>
 
@@ -155,7 +317,6 @@ const Testimonials: React.FC = () => {
             <div className="text-gray-400 text-sm">User Retention</div>
           </div>
         </div>
-
       </div>
     </section>
   );
