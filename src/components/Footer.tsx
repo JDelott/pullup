@@ -66,7 +66,7 @@ const Footer = () => {
               © {currentYear} <span className="text-white font-bold">PULLFORCE</span>
             </p>
             <p className="text-gray-500 text-xs tracking-wider uppercase font-light">
-              Engineered for peak performance
+              Engineered for peak performance by ovation solutions
             </p>
           </div>
         </div>
