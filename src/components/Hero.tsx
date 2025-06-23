@@ -75,7 +75,7 @@ const Hero = () => {
 
           {/* Trust indicator */}
           <p className="mt-8 text-sm text-gray-500 font-mono">
-            Join thousands of athletes • No equipment needed • Start in 30 seconds
+            Join thousands of athletes • No equipment needed • Start in 45 seconds
           </p>
         </div>
 
