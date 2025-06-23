@@ -3,122 +3,103 @@ import React from 'react';
 const Features = () => {
   const features = [
     {
-      title: "Smart Rep Counting",
-      description: "AI-powered precision tracking that counts every rep across all pull-up variations - wide grip, chin-ups, neutral grip.",
-      number: "01"
+      title: "AI Rep Counter",
+      description: "Never miss a rep. AI tracks every pull-up variation with surgical precision.",
+      icon: "01"
     },
     {
-      title: "Real-Time Form Analysis",
-      description: "Instant feedback on your form to maximize gains and prevent injury with computer vision technology.",
-      number: "02"
+      title: "Form Check",
+      description: "Real-time feedback prevents injury and maximizes every movement.",
+      icon: "02"
     },
     {
-      title: "Progress Intelligence",
-      description: "Advanced analytics show your strength progression with personalized insights and weekly performance reports.",
-      number: "03"
+      title: "Progress Intel",
+      description: "Data-driven insights reveal your strength evolution over time.",
+      icon: "03"
     },
     {
-      title: "Goal-Driven Training",
-      description: "Set targets, track streaks, and hit personal records with intelligent goal setting and motivation systems.",
-      number: "04"
-    },
-    {
-      title: "Train Everywhere",
-      description: "Works in any environment - home gym, park, or commercial facility. Your progress follows you anywhere.",
-      number: "05"
+      title: "Goal Engine",
+      description: "Set targets, crush records, build unstoppable momentum.",
+      icon: "04"
     }
-  ];
+  ] as const;
 
   return (
-    <section className="py-32 bg-neutral-900 relative overflow-hidden">
+    <section className="py-24 bg-neutral-900 relative overflow-hidden">
+      {/* Ambient Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-32 left-10 w-32 h-32 bg-[#00FFD1] opacity-5 rotate-12 blur-sm"></div>
-        <div className="absolute bottom-20 right-16 w-48 h-48 bg-white opacity-3 rounded-full blur-md"></div>
-        <div className="absolute top-1/2 right-1/3 w-2 h-64 bg-gradient-to-b from-[#00FFD1] to-transparent opacity-20"></div>
-        <div className="absolute top-1/4 left-1/2 w-1 h-32 bg-[#00FFD1] opacity-10 rotate-45"></div>
+        <div className="absolute top-20 left-8 w-24 h-24 bg-[#00FFD1] opacity-10 rotate-12 blur-lg"></div>
+        <div className="absolute bottom-16 right-12 w-32 h-32 bg-white opacity-5 rounded-full blur-xl"></div>
+        <div className="absolute top-1/2 right-1/4 w-1 h-48 bg-gradient-to-b from-[#00FFD1] to-transparent opacity-30"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="mb-28">
-          <div className="flex items-center gap-8 mb-8">
-            <div className="w-16 h-px bg-gradient-to-r from-[#00FFD1] to-transparent"></div>
-            <span className="text-[#00FFD1] font-mono text-sm tracking-[0.2em] uppercase">Features</span>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Header */}
+        <div className="mb-20">
+          <div className="flex items-center gap-6 mb-6">
+            <div className="w-12 h-px bg-[#00FFD1]"></div>
+            <span className="text-[#00FFD1] font-mono text-sm tracking-[0.3em] uppercase">Features</span>
           </div>
-          <h2 className="text-7xl font-black text-white tracking-tight leading-[0.9]">
-            INTELLIGENT
-            <span className="block text-[#00FFD1] mt-2">TRACKING</span>
+          <h2 className="text-6xl font-black text-white tracking-tight leading-[0.85]">
+            SMART
+            <span className="block text-[#00FFD1]">TRAINING</span>
           </h2>
         </div>
 
-        <div className="space-y-0">
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {features.map((feature, index) => (
             <div
-              key={index}
-              className="group border-t border-neutral-800 first:border-t-0 py-16 
-                hover:bg-gradient-to-r hover:from-neutral-800/20 hover:to-transparent
-                transition-all duration-700 relative cursor-pointer"
+              key={feature.icon}
+              className="group relative p-8 border border-neutral-800 
+                hover:border-[#00FFD1]/30 hover:bg-neutral-800/20
+                transition-all duration-500 cursor-pointer overflow-hidden"
+              style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="absolute left-0 top-16 select-none">
-                <span className="text-9xl font-black text-neutral-800/80 
-                  group-hover:text-[#00FFD1]/30 transition-all duration-700 
-                  font-mono group-hover:scale-110 origin-left">
-                  {feature.number}
+              {/* Background Number */}
+              <div className="absolute -top-4 -right-4 select-none">
+                <span className="text-8xl font-black text-neutral-800/40 
+                  group-hover:text-[#00FFD1]/20 transition-all duration-700 
+                  font-mono group-hover:scale-110">
+                  {feature.icon}
                 </span>
               </div>
 
-              <div className="ml-40 grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
-                <div className="lg:col-span-2">
-                  <h3 className="text-4xl font-bold text-white mb-6 
-                    group-hover:text-[#00FFD1] transition-all duration-500
-                    leading-tight">
-                    {feature.title}
-                  </h3>
-                  <div className="w-16 h-0.5 bg-[#00FFD1] transform scale-x-0 
-                    group-hover:scale-x-100 transition-transform duration-500 
-                    origin-left"></div>
-                </div>
-
-                <div className="lg:col-span-3">
-                  <p className="text-gray-400 text-xl leading-relaxed 
-                    group-hover:text-gray-200 transition-colors duration-500">
-                    {feature.description}
-                  </p>
-                </div>
+              {/* Content */}
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold text-white mb-4 
+                  group-hover:text-[#00FFD1] transition-colors duration-300">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-400 text-lg leading-relaxed 
+                  group-hover:text-gray-200 transition-colors duration-300">
+                  {feature.description}
+                </p>
               </div>
 
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 
-                opacity-0 group-hover:opacity-100 transition-all duration-500 
-                transform translate-x-8 group-hover:translate-x-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-px bg-[#00FFD1]"></div>
-                  <div className="w-2 h-2 bg-[#00FFD1] rotate-45"></div>
-                </div>
+              {/* Hover Arrow */}
+              <div className="absolute bottom-6 right-6 
+                opacity-0 group-hover:opacity-100 transition-all duration-300 
+                transform translate-x-4 group-hover:translate-x-0">
+                <div className="w-6 h-px bg-[#00FFD1]"></div>
               </div>
+
+              {/* Hover Glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#00FFD1]/5 to-transparent 
+                opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </div>
           ))}
         </div>
 
-        <div className="mt-40 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12">
-          <div className="max-w-lg">
-            <p className="text-gray-400 text-xl leading-relaxed mb-4">
-              Everything you need to master pull-ups.
-            </p>
-            <p className="text-gray-500 text-lg">
-              Nothing you don't.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <button className="px-10 py-5 bg-[#00FFD1] text-black font-bold text-lg
-              hover:bg-[#1AFFD6] hover:shadow-lg hover:shadow-[#00FFD1]/20
-              transition-all duration-300 transform hover:-translate-y-0.5">
-              START TRACKING
-            </button>
-            <div className="flex items-center gap-3 text-white hover:text-[#00FFD1] 
-              transition-colors duration-300 cursor-pointer group">
-              <span className="font-mono text-sm tracking-wider">WATCH DEMO</span>
-              <div className="w-8 h-px bg-current group-hover:w-12 transition-all duration-300"></div>
-            </div>
+        {/* CTA */}
+        <div className="mt-24 text-center">
+          <div className="inline-flex items-center gap-4 px-8 py-4 
+            border border-[#00FFD1]/30 hover:border-[#00FFD1] 
+            hover:bg-[#00FFD1]/10 transition-all duration-300 
+            cursor-pointer group">
+            <span className="text-white font-semibold">Start Training Smarter</span>
+            <div className="w-4 h-px bg-[#00FFD1] 
+              group-hover:w-8 transition-all duration-300"></div>
           </div>
         </div>
       </div>
